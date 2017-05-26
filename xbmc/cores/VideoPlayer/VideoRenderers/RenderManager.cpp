@@ -130,7 +130,6 @@ CRenderManager::CRenderManager(CDVDClock &clock, IRenderMsg *player) :
   m_captureWaitCounter(0),
   m_hasCaptures(false)
 {
-  m_pConfigPicture.reset(new VideoPicture());
 }
 
 CRenderManager::~CRenderManager()
@@ -210,7 +209,7 @@ bool CRenderManager::Configure(VideoPicture& picture, float fps, unsigned flags,
     m_stateEvent.Reset();
     m_clockSync.Reset();
     m_dvdClock.SetVsyncAdjust(0);
-    *m_pConfigPicture = picture;
+    m_pConfigPicture.reset(new VideoPicture(picture));
     m_pConfigPicture->videoBuffer->Acquire();
 
     CSingleLock lock2(m_presentlock);
@@ -302,8 +301,7 @@ bool CRenderManager::Configure()
   else
     m_renderState = STATE_UNCONFIGURED;
 
-  m_pConfigPicture->videoBuffer->Release();
-  m_pConfigPicture->videoBuffer = nullptr;
+  m_pConfigPicture.reset();
 
   m_stateEvent.Set();
   m_playerPort->VideoParamsChange();
